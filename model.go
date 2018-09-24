@@ -56,3 +56,7 @@ type PropertyIDValue struct {
 
 type Edge struct {
 }
+
+const (
+	Local = "local"
+)

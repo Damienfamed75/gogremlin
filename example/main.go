@@ -1,29 +1,33 @@
 package main
 
 import (
-	"fmt"
+	"io/ioutil"
+	"os"
 
-	"github.com/damienfamed75/gogremlin"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
+	grem "github.com/damienfamed75/gogremlin"
 )
 
-var (
-	localhost = "ws://127.0.0.1:8182/gremlin"
-
-	commands = []string{
-		"graph = JanusGraphFactory.open('conf/janusgraph-cassandra-es.properties')",
-		"GraphOfTheGodsFactory.load(graph)",
-		"g = graph.traversal()",
-	}
-)
+var localhost = "ws://127.0.0.1:8182/gremlin"
 
 func main() {
-	c := gogremlin.NewClient(localhost)
+	// Setup ---------------------
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+	c := grem.NewClient(localhost)
 
-	for _, v := range c.Vertices {
-		fmt.Println(v.Value.Properties["name"][0].Value.Value)
-	}
+	command := c.Graph.V().Limit(1).Label()
 
-	res, _ := c.ExecuteQuery(c.Graph.V().String())
+	// Output the command's string
+	log.Info().Str("cmd", command.String()).Msg("executing command")
 
-	fmt.Println(string(res))
+	// retrieve the result without error checking
+	res, _ := c.ExecGremlinQuery(command)
+
+	// Write result to json file
+	ioutil.WriteFile("output.json", res, 0644)
+
+	// Output the resulting marshalled object
+	log.Debug().RawJSON("result", res).Msg("command finished")
 }

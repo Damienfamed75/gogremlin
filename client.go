@@ -51,3 +51,13 @@ func (c *Client) ExecuteQuery(query string) ([]byte, error) {
 
 	return res, nil
 }
+
+// ExecGremlinQuery will run a query using a gremlinstring instead of a regular string.
+func (c *Client) ExecGremlinQuery(query *gremlinstring.GremlinString) ([]byte, error) {
+	res, err := c.ExecuteQuery(query.String())
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return res, nil
+}
